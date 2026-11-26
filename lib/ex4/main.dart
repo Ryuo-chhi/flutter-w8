@@ -1,38 +1,70 @@
 import 'package:flutter/material.dart';
 
+import 'jokes.dart';
+
 Color appColor = Colors.green[300] as Color;
 
-void main() => runApp(MaterialApp(
-      home: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: appColor,
-          title: const Text("Favorite Jokes"),
-        ),
-        body: const Column(
-          children: [FavoriteCard(), FavoriteCard(), FavoriteCard()],
-        ),
-      ),
+void main() => runApp(const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: FavoriteJokesScreen(),
     ));
 
-class FavoriteCard extends StatefulWidget {
-  const FavoriteCard({
-    super.key,
-  });
+/// Displays a scrollable list of jokes where only one joke can be marked as the best.
+class FavoriteJokesScreen extends StatefulWidget {
+  const FavoriteJokesScreen({super.key});
 
   @override
-  State<FavoriteCard> createState() => _FavoriteCardState();
+  State<FavoriteJokesScreen> createState() => _FavoriteJokesScreenState();
 }
 
-class _FavoriteCardState extends State<FavoriteCard> {
-  bool _isFavorite = false;
+class _FavoriteJokesScreenState extends State<FavoriteJokesScreen> {
+  int? _bestJokeIndex;
 
-  void onFavoriteClick() {
+  void _onFavoriteClick(int index) {
     setState(() {
-      _isFavorite = !_isFavorite;
+      _bestJokeIndex = (_bestJokeIndex == index) ? null : index;
     });
   }
- 
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: appColor,
+        title: const Text("Favorite Jokes"),
+      ),
+      body: ListView.builder(
+        itemCount: jokes.length,
+        itemBuilder: (context, index) {
+          final joke = jokes[index];
+          return FavoriteCard(
+            title: joke.title,
+            description: joke.description,
+            isFavorite: _bestJokeIndex == index,
+            onFavoriteClick: () => _onFavoriteClick(index),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Renders a single joke card with a selectable favorite heart button.
+class FavoriteCard extends StatelessWidget {
+  const FavoriteCard({
+    super.key,
+    required this.title,
+    required this.description,
+    required this.isFavorite,
+    required this.onFavoriteClick,
+  });
+
+  final String title;
+  final String description;
+  final bool isFavorite;
+  final void Function() onFavoriteClick;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -45,26 +77,26 @@ class _FavoriteCardState extends State<FavoriteCard> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-           Expanded(
+          Expanded(
             flex: 7,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'title',
+                  title,
                   style: TextStyle(
                       color: appColor, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 10.0),
-                const Text('description')
+                Text(description),
               ],
             ),
           ),
           IconButton(
               onPressed: onFavoriteClick,
               icon: Icon(
-                _isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: _isFavorite ? Colors.red : Colors.grey,
+                isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: isFavorite ? Colors.red : Colors.grey,
               ))
         ],
       ),
